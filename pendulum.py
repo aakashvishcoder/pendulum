@@ -45,3 +45,58 @@ theta_2_vals = sol.y[2]
 
 def polar_to_cartesian(theta_1, theta_2):
     x1 = L1 * np.sin(theta_1)
+    y1 = L1 * np.cos(theta_1)
+    x2 = x1 + L2 * np.sin(theta_2)
+    y2 = y1 + L2 * np.cos(theta_2)
+    return (x1, y1, x2, y2)
+
+def to_screen(x, y):
+    scale = 1
+    offset_x, offset_y = WIDTH // 2, HEIGHT // 4
+    return int(offset_x + scale * x), int(offset_y + scale * y)
+
+trail = []
+
+running = True
+frame = 0
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False 
+            
+    screen.fill(BLACK)
+    
+    if frame < len(theta_1_vals):
+        theta_1 = theta_1_vals[frame]
+        theta_2 = theta_2_vals[frame]
+        x1, y1, x2, y2 = polar_to_cartesian(theta_1, theta_2)
+        
+        p1 = to_screen(x1, y1)
+        p2 = to_screen(x2, y2)
+        origin = to_screen(0, 0)
+        
+        pygame.draw.line(screen, WHITE, origin, p1, 2)
+        pygame.draw.line(screen, WHITE, p1, p2, 2)
+        
+        pygame.draw.circle(screen, RED, origin, 5)
+        pygame.draw.circle(screen, BLUE, p1, int(m1))
+        pygame.draw.circle(screen, GREEN, p2, int(m2))
+        
+        trail.append(p2)
+        if len(trail) > 500:
+            trail.pop(0)
+        for i in range(1, len(trail)):
+            alpha = int(255 * i / len(trail))
+            color = (0, 255, 0, alpha)
+            pygame.draw.line(screen, GREEN, trail[i-1], trail[i], 2)
+        
+        frame += 1
+    else: 
+        frame = 0
+        trail.clear()
+    
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
+sys.exit()
